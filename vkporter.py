@@ -1,8 +1,10 @@
+#!/usr/bin/env python
+
 """
     :mod:`vkporter`
     ~~~~~~~~~~~~~~~
 
-    A microtool for export photo albums from `vk.com <https://vk.com>`_.
+    A micro tool for export photo albums from `vk.com <https://vk.com>`_.
      It's based on `VK_API <https://github.com/python273/vk_api>`_
      by Kirill Python <mikeking568@gmail.com>,
      `Requests <python-requests.org>`_
