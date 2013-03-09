@@ -12,8 +12,6 @@ Contents:
    :maxdepth: 2
 
    vkporter.rst
-   vk_api.rst
-
 
 
 Indices and tables

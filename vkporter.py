@@ -17,13 +17,28 @@ __version__ = '0.1.1'
 
 
 import argparse
+import datetime
 import os
 import time
 import sys
 
-from progressbar import FileTransferSpeed, Percentage, Bar, ProgressBar
-import requests
-from vk_api import vk_api
+try:
+    from progressbar import FileTransferSpeed, Percentage, Bar, ProgressBar
+except ImportError:
+    print("Cannot find 'progressbar' module. Please install it and try again.")
+    sys.exit(0)
+
+try:
+    import requests
+except ImportError:
+    print("Cannot find 'requests' module. Please install it and try again.")
+    sys.exit(0)
+
+try:
+    from vk_api import vk_api
+except ImportError:
+    print("Cannot find 'vk_api' module. Please install it and try again.")
+    sys.exit(0)
 
 
 def connect(login, password):
@@ -139,6 +154,7 @@ if __name__ == '__main__':
     if args.output.startswith('~'):
         args.output = os.path.expanduser(args.output)
 
+    start_time = datetime.datetime.now()
     try:
         # Initialize vk.com connection
         connection = connect(args.username, args.password)
@@ -176,3 +192,6 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         print('VKPorter exporting stopped by keyboard')
         sys.exit(0)
+
+    finally:
+        print("Done in %s" % (datetime.datetime.now() - start_time))
