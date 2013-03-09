@@ -1,9 +1,12 @@
 """
-    :mod:`porter`
-    ~~~~~~~~~~~~~
+    :mod:`vkporter`
+    ~~~~~~~~~~~~~~~
 
-    A microframework based on Werkzeug.  It's extensively documented
-    and follows best practice patterns.
+    A microtool for export photo albums from `vk.com <https://vk.com>`_.
+     It's based on `VK_API <https://github.com/python273/vk_api>`_
+     by Kirill Python <mikeking568@gmail.com>,
+     `Requests <python-requests.org>`_
+     and `ProgressBar <https://code.google.com/p/python-progressbar/>`_.
 
     :copyright: (c) 2013 by Andrey Maksimov.
     :license: BSD, see LICENSE for more details.

@@ -1,4 +1,8 @@
 .idea/*
 *.pyc
 .config
-docs/build
+docs/_build
+.DS_Store
+*.pyc
+*.pyo
+*.egg-info
