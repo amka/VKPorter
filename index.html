@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>VKPorter by amka</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/amka/VKPorter">View On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/amka/VKPorter/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/amka/VKPorter/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOADS</li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>VKPorter</h1>
+          <p>Extremely small tool to export photo albums from vk.com</p>
+          <hr>
+          <span class="credits left">Project maintained by <a href="https://github.com/amka">amka</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="http://twitter.com/#!/michigangraham">mattgraham</a></span>
+        </div>
+
+        <h1>VKPorter</h1>
+
+<p>Extremely small tool to export photo albums from <a href="https://vk.com">vk.com</a>.</p>
+
+<h2>Prerequisites</h2>
+
+<p>Before you can start using VKPorter you have to install some python libraries if you don't have it.</p>
+
+<h3>ProgressBar</h3>
+
+<p><a href="https://pypi.python.org/pypi/progressbar">https://pypi.python.org/pypi/progressbar</a></p>
+
+<pre><code>$ pip install progressbar
+</code></pre>
+
+<h3>Requests</h3>
+
+<p><a href="https://github.com/kennethreitz/requests">https://github.com/kennethreitz/requests</a></p>
+
+<pre><code>$ pip install requests
+</code></pre>
+
+<p>or, with <a href="http://pypi.python.org/pypi/setuptools">easy_install</a>:</p>
+
+<pre><code>$ easy_install requests
+</code></pre>
+
+<h3>VK_API</h3>
+
+<p><a href="https://github.com/python273/vk_api">https://github.com/python273/vk_api</a></p>
+
+<pre><code>$ pip install vk_api
+</code></pre>
+
+<h2>Usage</h2>
+
+<p>Synopsis:</p>
+
+<pre><code>$ vkporter.py [-h] [-v] [-o OUTPUT] username password
+</code></pre>
+
+<p>See also <code>vkporter --help</code>.</p>
+
+<h3>Examples</h3>
+
+<pre><code>$ vkporter.py username password
+</code></pre>
+
+<p>photo albums will be exported to <code>./exported</code>.</p>
+
+<pre><code>$ vkporter.py -o ~/Documents/Exported username password
+</code></pre>
+
+<p>photo albums will be exported to <code>~/Documents/Exported</code>.</p>
+      </section>
+
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-39164226-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
