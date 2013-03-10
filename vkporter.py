@@ -13,12 +13,14 @@
     :copyright: (c) 2013 by Andrey Maksimov.
     :license: BSD, see LICENSE for more details.
 """
+
 __author__ = 'Andrey Maksimov <meamka@me.com>'
 __date__ = '09.03.13'
 __version__ = '0.1.1'
 
 import argparse
 import datetime
+from getpass import getpass
 import os
 import time
 import sys
@@ -126,7 +128,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='', version='%(prog)s ' + __version__)
     parser.add_argument('username', help='vk.com username')
-    parser.add_argument('password', help='vk.com username password')
+    # parser.add_argument('password', help='vk.com username password')
     parser.add_argument('-o', '--output', help='output path to store photos',
                         default=os.path.abspath(os.path.join(os.path.dirname(__file__), 'exported')))
 
@@ -138,17 +140,18 @@ if __name__ == '__main__':
 
     start_time = datetime.datetime.now()
     try:
+        password = getpass("Password: ")
+
         # Initialize vk.com connection
-        connection = connect(args.username, args.password)
+        connection = connect(args.username, password)
 
         # Request list of photo albums
         albums = get_albums(connection)
         print("Found %s album%s:" % (len(albums), 's' if len(albums) > 1 else ''))
-        print('%-40s|%4s|%10s' % ('title', 'size', 'aid'))
-        print('-' * 61)
         ix = 0
         for album in albums:
-            print('%3d. %-40s|%4s|%10s' % (ix + 1, album['title'], album['size'], album['aid']))
+            print('%3d. %-40s %4s item%s' % (
+            ix + 1, album['title'], album['size'], 's' if int(album['size']) > 1 else ''))
             ix += 1
 
         # Sleep to prevent max request count
@@ -173,8 +176,6 @@ if __name__ == '__main__':
 
                 download(photo, output)
                 processed += 1
-
-            print("\n")
 
     except Exception as e:
         print(e)

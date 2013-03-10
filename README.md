@@ -34,7 +34,7 @@ or, with [easy_install](http://pypi.python.org/pypi/setuptools):
 
 Synopsis:
 
-    $ vkporter.py [-h] [-v] [-o OUTPUT] username password
+    $ vkporter.py [-h] [-v] [-o OUTPUT] username
 
 See also `vkporter --help`.
 
@@ -45,6 +45,6 @@ See also `vkporter --help`.
 photo albums will be exported to `./exported`.
 
 
-    $ vkporter.py -o ~/Documents/Exported username password
+    $ vkporter.py -o ~/Documents/Exported username
     
 photo albums will be exported to `~/Documents/Exported`.
