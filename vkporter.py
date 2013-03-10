@@ -160,6 +160,7 @@ if __name__ == '__main__':
         if not os.path.exists(args.output):
             os.makedirs(args.output)
 
+        prev_s_len = 0  # A length of the previous output line.
         for album in albums:
             response = get_photos(connection, album['aid'])
             output = os.path.join(args.output, album['title'])
@@ -170,8 +171,12 @@ if __name__ == '__main__':
 
             for photo in response:
                 percent = round(float(processed) / float(len(response)) * 100, 2)
-                sys.stdout.write(
-                    "\rExporting %s... %s of %s (%2d%%)" % (album['title'], processed, len(response), percent))
+                output_s = "\rExporting %s... %s of %s (%2d%%)" % (album['title'], processed, len(response), percent)
+                # Pad with spaces to clear the previous line's tail.
+                # It's ok to multiply by negative here.
+                output_s += ' '*(prev_s_len - len(output_s))
+                sys.stdout.write(output_s)
+                prev_s_len = len(output_s)
                 sys.stdout.flush()
 
                 download(photo, output)
