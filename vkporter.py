@@ -17,18 +17,11 @@ __author__ = 'Andrey Maksimov <meamka@me.com>'
 __date__ = '09.03.13'
 __version__ = '0.1.1'
 
-
 import argparse
 import datetime
 import os
 import time
 import sys
-
-try:
-    from progressbar import FileTransferSpeed, Percentage, Bar, ProgressBar
-except ImportError:
-    print("Cannot find 'progressbar' module. Please install it and try again.")
-    sys.exit(0)
 
 try:
     import requests
@@ -37,7 +30,7 @@ except ImportError:
     sys.exit(0)
 
 try:
-    from vk_api import vk_api
+    from vk_api import VkApi
 except ImportError:
     print("Cannot find 'vk_api' module. Please install it and try again.")
     sys.exit(0)
@@ -54,7 +47,7 @@ def connect(login, password):
     :return: :mod:`vk_api.vk_api.VkApi` connection
     :rtype: :mod:`VkApi`
     """
-    return vk_api.VkApi(login, password)
+    return VkApi(login, password)
 
 
 def get_albums(connection):
@@ -99,24 +92,11 @@ def download(photo, output):
     url = photo.get('src_xxxbig') or photo.get('src_xxbig') or photo.get('src_xbig') or photo.get('src_big')
 
     r = requests.get(url)
-    size = int(r.headers['content-length'].strip())
-    bytes = 0
-    title = photo['text'] or '%s' % photo['pid']
-    widgets = [title, ": ", Bar(marker="|", left="[", right=" "),
-               Percentage(), " ", FileTransferSpeed(), "] ",
-               ' ',
-               " of {0}".format(sizeof_fmt(size))]
-    pbar = ProgressBar(widgets=widgets, maxval=size).start()
-    # file = []
-    with open(os.path.join(output, title + '.jpg'), 'wb') as f:
+    title = photo['pid']
+    with open(os.path.join(output, '%s.jpg' % title), 'wb') as f:
         for buf in r.iter_content(1024):
             if buf:
                 f.write(buf)
-                bytes += len(buf)
-                pbar.update(bytes)
-    pbar.finish()
-
-
 
 
 def sizeof_fmt(num):
@@ -144,7 +124,7 @@ if __name__ == '__main__':
     # # do it while have photos
     # do it while have albums
 
-    parser = argparse.ArgumentParser(description='', version='%(prog)s '+ __version__)
+    parser = argparse.ArgumentParser(description='', version='%(prog)s ' + __version__)
     parser.add_argument('username', help='vk.com username')
     parser.add_argument('password', help='vk.com username password')
     parser.add_argument('-o', '--output', help='output path to store photos',
@@ -180,12 +160,21 @@ if __name__ == '__main__':
         for album in albums:
             response = get_photos(connection, album['aid'])
             output = os.path.join(args.output, album['title'])
-            print('Exporting %s...' % album['title'])
             if not os.path.exists(output):
                 os.makedirs(output)
 
+            processed = 0
+
             for photo in response:
+                percent = round(float(processed) / float(len(response)) * 100, 2)
+                sys.stdout.write(
+                    "\rExporting %s... %s of %s (%2d%%)" % (album['title'], processed, len(response), percent))
+                sys.stdout.flush()
+
                 download(photo, output)
+                processed += 1
+
+            print("\n")
 
     except Exception as e:
         print(e)
