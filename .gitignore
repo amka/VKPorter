@@ -6,3 +6,4 @@ docs/_build
 *.pyc
 *.pyo
 *.egg-info
+config
