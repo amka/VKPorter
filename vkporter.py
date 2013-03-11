@@ -141,6 +141,9 @@ if __name__ == '__main__':
     start_time = datetime.datetime.now()
     try:
         password = getpass("Password: ")
+        if not password:
+            print('Password too short')
+            sys.exit(0)
 
         # Initialize vk.com connection
         connection = connect(args.username, password)
