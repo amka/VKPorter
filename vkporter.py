@@ -185,6 +185,11 @@ if __name__ == '__main__':
                 download(photo, output)
                 processed += 1
 
+                # crazy hack to prevent vk.com "Max retries exceeded" error
+                # pausing download process every 50 photos
+                if processed % 50 == 0:
+                    time.sleep(1)
+
     except Exception as e:
         print(e)
         sys.exit(1)
