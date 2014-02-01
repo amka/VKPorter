@@ -69,7 +69,11 @@ def get_albums(connection):
 
 
 def download_album(connection, output_path, date_format, album, prev_s_len=0):
-    response = get_photos(connection, album['id'])
+    if album['id'] == 'user':
+        response = get_user_photos(connection)
+    else:
+        response = get_photos(connection, album['id'])
+
     output = os.path.join(output_path, album['title'])
     if not os.path.exists(output):
         os.makedirs(output)
@@ -95,6 +99,15 @@ def download_album(connection, output_path, date_format, album, prev_s_len=0):
         # pausing download process every 50 photos
         if processed % 50 == 0:
             time.sleep(1)
+
+
+def get_user_photos(connection):
+    """Get user photos list"""
+    try:
+        return connection.method('photos.getUserPhotos', {'count': 1000})
+    except Exception as e:
+        print(e)
+        return None
 
 
 def get_photos(connection, album_id):
@@ -162,7 +175,7 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--output', help='output path to store photos',
                         default=os.path.abspath(os.path.join(os.path.dirname(__file__), 'exported')))
     parser.add_argument('-f', '--date_format', help='for photo title',                  default='%Y%m%d@%H%M')
-    parser.add_argument('-a', '--album_id', help='dowload a particular album. Additional values: wall, profile, saved')
+    parser.add_argument('-a', '--album_id', help='dowload a particular album. Additional values: wall, profile, saved, user')
 
     args = parser.parse_args()
 
