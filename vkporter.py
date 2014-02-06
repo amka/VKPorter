@@ -68,6 +68,48 @@ def get_albums(connection):
         return None
 
 
+def download_album(connection, output_path, date_format, album, prev_s_len=0):
+    if album['id'] == 'user':
+        response = get_user_photos(connection)
+    else:
+        response = get_photos(connection, album['id'])
+
+    output = os.path.join(output_path, album['title'])
+    if not os.path.exists(output):
+        os.makedirs(output)
+
+    photos_count = response['count']
+    photos = response['items']
+    processed = 0
+
+    for photo in photos:
+        percent = round(float(processed) / float(photos_count) * 100, 2)
+        output_s = "\rExporting %s... %s of %s (%2d%%)" % (album['title'], processed, photos_count, percent)
+        # Pad with spaces to clear the previous line's tail.
+        # It's ok to multiply by negative here.
+        output_s += ' '*(prev_s_len - len(output_s))
+        sys.stdout.write(output_s)
+        prev_s_len = len(output_s)
+        sys.stdout.flush()
+
+        download(photo, output, date_format)
+        processed += 1
+
+        # crazy hack to prevent vk.com "Max retries exceeded" error
+        # pausing download process every 50 photos
+        if processed % 50 == 0:
+            time.sleep(1)
+
+
+def get_user_photos(connection):
+    """Get user photos list"""
+    try:
+        return connection.method('photos.getUserPhotos', {'count': 1000})
+    except Exception as e:
+        print(e)
+        return None
+
+
 def get_photos(connection, album_id):
     """Get photos list for selected album.
 
@@ -80,21 +122,22 @@ def get_photos(connection, album_id):
     :rtype: list
     """
     try:
-        return connection.method('photos.get', {'aid': album_id})
+        return connection.method('photos.get', {'album_id': album_id})
     except Exception as e:
         print(e)
         return None
 
 
-def download(photo, output):
+def download(photo, output, date_format):
     """Download photo
 
     :param photo:
     """
-    url = photo.get('src_xxxbig') or photo.get('src_xxbig') or photo.get('src_xbig') or photo.get('src_big')
+    url = photo.get('photo_2560') or photo.get('photo_1280') or photo.get('photo_807') or photo.get('photo_604') or photo.get('photo_130')
 
     r = requests.get(url)
-    title = photo['pid']
+    formatted_date = datetime.datetime.fromtimestamp(photo['date']).strftime(date_format)
+    title = '%s_%s' % (formatted_date, photo['id'])
     with open(os.path.join(output, '%s.jpg' % title), 'wb') as f:
         for buf in r.iter_content(1024):
             if buf:
@@ -131,6 +174,8 @@ if __name__ == '__main__':
     # parser.add_argument('password', help='vk.com username password')
     parser.add_argument('-o', '--output', help='output path to store photos',
                         default=os.path.abspath(os.path.join(os.path.dirname(__file__), 'exported')))
+    parser.add_argument('-f', '--date_format', help='for photo title',                  default='%Y%m%d@%H%M')
+    parser.add_argument('-a', '--album_id', help='dowload a particular album. Additional values: wall, profile, saved, user')
 
     args = parser.parse_args()
 
@@ -148,50 +193,40 @@ if __name__ == '__main__':
         # Initialize vk.com connection
         connection = connect(args.username, password)
 
-        # Request list of photo albums
-        albums = get_albums(connection)
-        print("Found %s album%s:" % (len(albums), 's' if len(albums) > 1 else ''))
-        ix = 0
-        for album in albums:
-            print('%3d. %-40s %4s item%s' % (
-            ix + 1, album['title'], album['size'], 's' if int(album['size']) > 1 else ''))
-            ix += 1
+        if args.album_id:
+            album = {
+                'id': args.album_id,
+                'title': args.album_id
+            }
+            download_album(connection, args.output, args.date_format, album)
+        else:
+            # Request list of photo albums
+            albums_response = get_albums(connection)
+            albums_count = albums_response['count']
+            albums = albums_response['items']
 
-        # Sleep to prevent max request count
-        time.sleep(1)
+            print("Found %s album%s:" % (albums_count, 's' if albums_count > 1 else ''))
+            ix = 0
+            for album in albums:
+                print('%3d. %-40s %4s item%s' % (
+                    ix + 1, album['title'], album['size'], 's' if int(album['size']) > 1 else ''))
+                ix += 1
 
-        if not os.path.exists(args.output):
-            os.makedirs(args.output)
+            # Sleep to prevent max request count
+            time.sleep(1)
 
-        prev_s_len = 0  # A length of the previous output line.
-        for album in albums:
-            response = get_photos(connection, album['aid'])
-            output = os.path.join(args.output, album['title'])
-            if not os.path.exists(output):
-                os.makedirs(output)
+            if not os.path.exists(args.output):
+                os.makedirs(args.output)
 
-            processed = 0
-
-            for photo in response:
-                percent = round(float(processed) / float(len(response)) * 100, 2)
-                output_s = "\rExporting %s... %s of %s (%2d%%)" % (album['title'], processed, len(response), percent)
-                # Pad with spaces to clear the previous line's tail.
-                # It's ok to multiply by negative here.
-                output_s += ' '*(prev_s_len - len(output_s))
-                sys.stdout.write(output_s)
-                prev_s_len = len(output_s)
-                sys.stdout.flush()
-
-                download(photo, output)
-                processed += 1
-
-                # crazy hack to prevent vk.com "Max retries exceeded" error
-                # pausing download process every 50 photos
-                if processed % 50 == 0:
-                    time.sleep(1)
+            for album in albums:
+                download_album(connection, args.output, args.date_format, album)
 
     except Exception as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print(e)
+        print(exc_type, fname, exc_tb.tb_lineno)
+
         sys.exit(1)
 
     except KeyboardInterrupt:
