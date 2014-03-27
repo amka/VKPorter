@@ -6,29 +6,10 @@ Extremely small tool to export photo albums from [vk.com](https://vk.com).
 
 ## Prerequisites
 
-Before you can start using VKPorter you have to install some python libraries if you don't have it.
+Before you can start using VKPorter you have to install some python libraries.
+To do so run this command in project root.
 
-### ProgressBar
-
-[https://pypi.python.org/pypi/progressbar](https://pypi.python.org/pypi/progressbar)
-
-    $ pip install progressbar
-
-
-### Requests
-
-[https://github.com/kennethreitz/requests](https://github.com/kennethreitz/requests)
-
-    $ pip install requests
-
-or, with [easy_install](http://pypi.python.org/pypi/setuptools):
-
-    $ easy_install requests
-
-### VK_API
-[https://github.com/python273/vk_api](https://github.com/python273/vk_api)
-
-    $ pip install vk_api
+    $ pip install -r requirements.txt
 
 ## Usage
 
