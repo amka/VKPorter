@@ -52,7 +52,7 @@ def connect(login, password):
     return VkApi(login, password)
 
 
-def get_albums(connection):
+def get_albums(connection, id=0):
     """Get albums list for currently authorized user.
 
     :param connection: :class:`vk_api.vk_api.VkApi` connection
@@ -62,17 +62,21 @@ def get_albums(connection):
     :rtype: list
     """
     try:
-        return connection.method('photos.getAlbums')
+        if id == 0:
+            return connection.method('photos.getAlbums')
+        else:
+            return connection.method('photos.getAlbums', {'owner_id': id})
+
     except Exception as e:
         print(e)
         return None
 
 
-def download_album(connection, output_path, date_format, album, prev_s_len=0):
+def download_album(connection, output_path, date_format, album, owner=0, desc=False, comments=False, prev_s_len=0):
     if album['id'] == 'user':
         response = get_user_photos(connection)
     else:
-        response = get_photos(connection, album['id'])
+        response = get_photos(connection, album['id'], owner)
 
     output = os.path.join(output_path, album['title'])
     if not os.path.exists(output):
@@ -84,15 +88,15 @@ def download_album(connection, output_path, date_format, album, prev_s_len=0):
 
     for photo in photos:
         percent = round(float(processed) / float(photos_count) * 100, 2)
-        output_s = "\rExporting %s... %s of %s (%2d%%)" % (album['title'], processed, photos_count, percent)
+        output_s = "Exporting %s... %s of %s (%2d%%)" % (album['title'], processed, photos_count, percent)
         # Pad with spaces to clear the previous line's tail.
         # It's ok to multiply by negative here.
         output_s += ' '*(prev_s_len - len(output_s))
-        sys.stdout.write(output_s)
+        write_line(output_s)
         prev_s_len = len(output_s)
         sys.stdout.flush()
 
-        download(photo, output, date_format)
+        download(photo, output, date_format, desc, comments)
         processed += 1
 
         # crazy hack to prevent vk.com "Max retries exceeded" error
@@ -110,7 +114,7 @@ def get_user_photos(connection):
         return None
 
 
-def get_photos(connection, album_id):
+def get_photos(connection, album_id, owner_id):
     """Get photos list for selected album.
 
     :param connection: :class:`vk_api.vk_api.VkApi` connection
@@ -121,28 +125,43 @@ def get_photos(connection, album_id):
     :return: list of photo albums or ``None``
     :rtype: list
     """
+
     try:
-        return connection.method('photos.get', {'album_id': album_id})
+        if owner_id == 0:
+            return connection.method('photos.get', {'album_id': album_id})
+        else:
+            return connection.method('photos.get', {'owner_id': owner_id, 'album_id': album_id})
     except Exception as e:
         print(e)
         return None
 
 
-def download(photo, output, date_format):
+def download(photo, output, date_format, desc, comments):
     """Download photo
 
     :param photo:
     """
     url = photo.get('photo_2560') or photo.get('photo_1280') or photo.get('photo_807') or photo.get('photo_604') or photo.get('photo_130')
 
-    r = requests.get(url)
     formatted_date = datetime.datetime.fromtimestamp(photo['date']).strftime(date_format)
     title = '%s_%s' % (formatted_date, photo['id'])
-    with open(os.path.join(output, '%s.jpg' % title), 'wb') as f:
-        for buf in r.iter_content(1024):
-            if buf:
-                f.write(buf)
 
+    filename_download = os.path.join(output, '%s.jpg.download' % title)
+    filename_final = os.path.join(output, '%s.jpg' % title)
+
+    if os.path.isfile(filename_final):
+        write_line('File %s already exists.' % title)
+    else:
+        r = requests.get(url)
+        with open(filename_download, 'wb') as f:
+            for buf in r.iter_content(1024):
+                if buf:
+                    f.write(buf)
+        os.rename(filename_download, filename_final)
+
+    if desc:
+        fd = open(os.path.join(output, '%s.txt' % title), 'w')
+        fd.write(photo['text'].encode('utf-8'))
 
 def sizeof_fmt(num):
     """Small function to format numbered size to human readable string
@@ -157,6 +176,8 @@ def sizeof_fmt(num):
             return "%3.1f %s" % (num, x)
         num /= 1024.0
 
+def write_line(text):
+    print u'\r %s' % text
 
 if __name__ == '__main__':
 
@@ -176,6 +197,9 @@ if __name__ == '__main__':
                         default=os.path.abspath(os.path.join(os.path.dirname(__file__), 'exported')))
     parser.add_argument('-f', '--date_format', help='for photo title',                  default='%Y%m%d@%H%M')
     parser.add_argument('-a', '--album_id', help='dowload a particular album. Additional values: wall, profile, saved, user')
+    parser.add_argument('-w', '--owner_id', help='dowload albums of a particular user or group', default=0)
+    parser.add_argument('-d', '--desc', help='save description of the photo', default=False)
+    parser.add_argument('-c', '--comments', help='save comments of the photo', default=False)
 
     args = parser.parse_args()
 
@@ -198,10 +222,10 @@ if __name__ == '__main__':
                 'id': args.album_id,
                 'title': args.album_id
             }
-            download_album(connection, args.output, args.date_format, album)
+            download_album(connection, args.output, args.date_format, album, args.owner_id, args.desc, args.comments)
         else:
             # Request list of photo albums
-            albums_response = get_albums(connection)
+            albums_response = get_albums(connection, args.owner_id)
             albums_count = albums_response['count']
             albums = albums_response['items']
 
@@ -219,7 +243,7 @@ if __name__ == '__main__':
                 os.makedirs(args.output)
 
             for album in albums:
-                download_album(connection, args.output, args.date_format, album)
+                download_album(connection, args.output, args.date_format, album, args.owner_id, args.desc, args.comments)
 
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
