@@ -8,27 +8,13 @@ Extremely small tool to export photo albums from [vk.com](https://vk.com).
 
 Before you can start using VKPorter you have to install some python libraries if you don't have it.
 
-### ProgressBar
-
-[https://pypi.python.org/pypi/progressbar](https://pypi.python.org/pypi/progressbar)
-
-    $ pip install progressbar
+    $ pip installe -r requirements.txt
 
 
-### Requests
+* ProgressBar ([https://pypi.python.org/pypi/progressbar](https://pypi.python.org/pypi/progressbar))
+* Requests ([https://github.com/kennethreitz/requests](https://github.com/kennethreitz/requests))
+* VK_API ([https://github.com/python273/vk_api](https://github.com/python273/vk_api))
 
-[https://github.com/kennethreitz/requests](https://github.com/kennethreitz/requests)
-
-    $ pip install requests
-
-or, with [easy_install](http://pypi.python.org/pypi/setuptools):
-
-    $ easy_install requests
-
-### VK_API
-[https://github.com/python273/vk_api](https://github.com/python273/vk_api)
-
-    $ pip install vk_api
 
 ## Usage
 
@@ -43,7 +29,6 @@ See also `vkporter --help`.
     $ vkporter.py username password
     
 photo albums will be exported to `./exported`.
-
 
     $ vkporter.py -o ~/Documents/Exported username
     
