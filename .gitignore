@@ -7,3 +7,5 @@ docs/_build
 *.pyo
 *.egg-info
 config
+
+*.json
