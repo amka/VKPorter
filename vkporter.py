@@ -15,8 +15,9 @@
 """
 
 __author__ = 'Andrey Maksimov <meamka@me.com>'
-__date__ = '09.03.13'
-__version__ = '0.1.1'
+__date__ = '09.10.14'
+__version__ = '0.2.0'
+
 
 import argparse
 import datetime
@@ -32,7 +33,7 @@ except ImportError:
     sys.exit(0)
 
 try:
-    from vk_api import VkApi
+    from vk_api import VkApi, AuthorizationError
 except ImportError:
     print("Cannot find 'vk_api' module. Please install it and try again.")
     sys.exit(0)
@@ -191,7 +192,12 @@ if __name__ == '__main__':
             sys.exit(0)
 
         # Initialize vk.com connection
-        connection = connect(args.username, password)
+
+        try:
+            connection = connect(args.username, password)
+        except AuthorizationError as error_msg:
+            print(error_msg)
+            sys.exit()
 
         if args.album_id:
             album = {
