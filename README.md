@@ -33,3 +33,7 @@ photo albums will be exported to `./exported`.
     $ vkporter.py -o ~/Documents/Exported username
     
 photo albums will be exported to `~/Documents/Exported`.
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/amka/vkporter/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
