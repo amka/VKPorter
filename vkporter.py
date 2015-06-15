@@ -68,8 +68,9 @@ def get_user_id(connection, step=0, max_step=2):
     else:
         try:
             connection.authorization()
-            # You can call also connection.api_login()
+            # You can call also
             # connection.vk_login()
+            # connection.api_login()
         except:
             print step, user_id, connection.settings.all
         step = step + 1
@@ -92,7 +93,7 @@ def connect(login, password):
     return connection
 
 
-def get_albums(connection):
+def get_albums(connection, owner_id=None):
     """Get albums list for currently authorized user.
 
     :param connection: :class:`vk_api.vk_api.VkApi` connection
@@ -104,18 +105,18 @@ def get_albums(connection):
     try:
         return connection.method(
             'photos.getAlbums',
-                {'owner_id': get_user_id(connection)}
+                {'owner_id': owner_id or get_user_id(connection)}
         )
     except Exception as e:
         print(e)
         return None
 
 
-def download_album(connection, output_path, date_format, album, prev_s_len=0):
+def download_album(connection, output_path, date_format, album, prev_s_len=0, owner_id=None):
     if album['id'] == 'user':
-        response = get_user_photos(connection)
+        response = get_user_photos(connection, owner_id=owner_id)
     else:
-        response = get_photos(connection, album['id'])
+        response = get_photos(connection, album['id'], owner_id=owner_id)
 
     output = os.path.join(output_path, album['title'])
     if not os.path.exists(output):
@@ -144,20 +145,20 @@ def download_album(connection, output_path, date_format, album, prev_s_len=0):
             time.sleep(1)
 
 
-def get_user_photos(connection):
+def get_user_photos(connection, owner_id=None):
     """Get user photos list"""
     try:
         return connection.method(
             'photos.getUserPhotos',
                 {'count': 1000,
-                'owner_id': get_user_id(connection)}
+                'owner_id': owner_id or get_user_id(connection)}
         )
     except Exception as e:
         print(e)
         return None
 
 
-def get_photos(connection, album_id):
+def get_photos(connection, album_id, owner_id=None):
     """Get photos list for selected album.
 
     :param connection: :class:`vk_api.vk_api.VkApi` connection
@@ -172,7 +173,7 @@ def get_photos(connection, album_id):
         return connection.method(
             'photos.get',
                 {'album_id': album_id,
-                'owner_id': get_user_id(connection)}
+                'owner_id': owner_id or get_user_id(connection)}
         )
     except Exception as e:
         print(e)
@@ -226,6 +227,7 @@ if __name__ == '__main__':
                         default=os.path.abspath(os.path.join(os.path.dirname(__file__), 'exported')))
     parser.add_argument('-f', '--date_format', help='for photo title', default='%Y%m%d@%H%M')
     parser.add_argument('-a', '--album_id', help='dowload a particular album. Additional values: wall, profile, saved, user')
+    parser.add_argument('-id', '--owner_id', help='User ID')
 
     args = parser.parse_args()
 
@@ -253,11 +255,11 @@ if __name__ == '__main__':
                 'id': args.album_id,
                 'title': args.album_id
             }
-            download_album(connection, args.output, args.date_format, album)
+            download_album(connection, args.output, args.date_format, album, owner_id=args.owner_id)
         # download all albums
         else:
             # Request list of photo albums
-            albums_response = get_albums(connection)
+            albums_response = get_albums(connection, owner_id=args.owner_id)
             albums_count = albums_response['count']
             albums = albums_response['items']
             all_photos_count = 0
@@ -280,7 +282,7 @@ if __name__ == '__main__':
                 os.makedirs(args.output)
 
             for album in albums:
-                download_album(connection, args.output, args.date_format, album)
+                download_album(connection, args.output, args.date_format, album, owner_id=args.owner_id)
 
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
