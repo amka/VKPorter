@@ -77,7 +77,7 @@ def get_user_id(connection, step=0, max_step=2):
         return get_user_id(connection, step=step)
 
 
-def connect(login, password):
+def connect(login, password, owner_id=None):
     """Initialize connection with `vk.com <https://vk.com>`_ and try to authorize user with given credentials.
 
     :param login: user login e. g. email, phone number
@@ -90,10 +90,11 @@ def connect(login, password):
     """
     connection = VkApi(login, password)
     connection.authorization()
+    connection.owner_id = owner_id or get_user_id(connection)
     return connection
 
 
-def get_albums(connection, owner_id=None):
+def get_albums(connection):
     """Get albums list for currently authorized user.
 
     :param connection: :class:`vk_api.vk_api.VkApi` connection
@@ -105,18 +106,18 @@ def get_albums(connection, owner_id=None):
     try:
         return connection.method(
             'photos.getAlbums',
-                {'owner_id': owner_id or get_user_id(connection)}
+                {'owner_id': connection.owner_id}
         )
     except Exception as e:
         print(e)
         return None
 
 
-def download_album(connection, output_path, date_format, album, prev_s_len=0, owner_id=None):
+def download_album(connection, output_path, date_format, album, prev_s_len=0):
     if album['id'] == 'user':
-        response = get_user_photos(connection, owner_id=owner_id)
+        response = get_user_photos(connection)
     else:
-        response = get_photos(connection, album['id'], owner_id=owner_id)
+        response = get_photos(connection, album['id'])
 
     output = os.path.join(output_path, album['title'])
     if not os.path.exists(output):
@@ -145,20 +146,20 @@ def download_album(connection, output_path, date_format, album, prev_s_len=0, ow
             time.sleep(1)
 
 
-def get_user_photos(connection, owner_id=None):
+def get_user_photos(connection):
     """Get user photos list"""
     try:
         return connection.method(
             'photos.getUserPhotos',
                 {'count': 1000,
-                'owner_id': owner_id or get_user_id(connection)}
+                'owner_id': connection.owner_id}
         )
     except Exception as e:
         print(e)
         return None
 
 
-def get_photos(connection, album_id, owner_id=None):
+def get_photos(connection, album_id):
     """Get photos list for selected album.
 
     :param connection: :class:`vk_api.vk_api.VkApi` connection
@@ -173,7 +174,7 @@ def get_photos(connection, album_id, owner_id=None):
         return connection.method(
             'photos.get',
                 {'album_id': album_id,
-                'owner_id': owner_id or get_user_id(connection)}
+                'owner_id': connection.owner_id}
         )
     except Exception as e:
         print(e)
@@ -244,7 +245,7 @@ if __name__ == '__main__':
 
         # Initialize vk.com connection
         try:
-            connection = connect(args.username, password)
+            connection = connect(args.username, password, owner_id=args.owner_id)
         except AuthorizationError as error_msg:
             print(error_msg)
             sys.exit()
@@ -259,7 +260,7 @@ if __name__ == '__main__':
         # download all albums
         else:
             # Request list of photo albums
-            albums_response = get_albums(connection, owner_id=args.owner_id)
+            albums_response = get_albums(connection)
             albums_count = albums_response['count']
             albums = albums_response['items']
             all_photos_count = 0
@@ -282,7 +283,7 @@ if __name__ == '__main__':
                 os.makedirs(args.output)
 
             for album in albums:
-                download_album(connection, args.output, args.date_format, album, owner_id=args.owner_id)
+                download_album(connection, args.output, args.date_format, album)
 
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
