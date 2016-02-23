@@ -1,5 +1,7 @@
-VKPorter
-========
+# VKPorter [deprecated]
+
+## [Spelt](http://github.com/amka/Spelt) is a replacement for VKPorter.
+
 
 Extremely small tool to export photo albums from [vk.com](https://vk.com).
 
